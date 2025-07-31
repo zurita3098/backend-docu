@@ -22,7 +22,7 @@ def get_log(email: Optional[str] = None):
                 return cursor.fetchall()
 
 def save_log(log: log):
-    query = "INSERT INTO logs (email, accion, created_at) VALUES (%s, %s, %s)"
+    query = "INSERT INTO logs (email, accion, fecha_creacion) VALUES (%s, %s, %s)"
     now = datetime.now()
 
     with get_db_connection() as connection:

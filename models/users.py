@@ -10,7 +10,7 @@ class Users(BaseModel):
     username: str 
     email: str
     password: str
-    created_at: Optional[datetime] = None
+    fecha_creacion: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     cedula: Optional[str] = None
     nombre_apellido: Optional[str] = None
@@ -62,7 +62,7 @@ def save_user(bb: Users, newPassword="", user=None):
         )
 
     query = """
-        INSERT INTO users (username, email, password, created_at, updated_at) 
+        INSERT INTO users (username, email, password, fecha_creacion, updated_at) 
         VALUES (%s, %s, %s, %s, %s)
     """
     with get_db_connection() as connection:

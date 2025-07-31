@@ -7,32 +7,37 @@ from models.log import log, save_log
 
 
 class Solicitudes(BaseModel):
-    usuario_id: str
-    tipo: str
-    estado: str
-    fecha_respuesta: Optional[date] = None
+    usuario_id: int
+    tipo: int
+    pdf_1: Optional[bytes] = None
+    jpg_1: Optional[bytes] = None
+    observacion: Optional[str] = None
+    estado: int
+    fecha_respuesta: Optional[datetime] = None
     respuesta: Optional[str] = None
     fecha_creacion: Optional[datetime] = None
 
-def get_solicitud(ced: str):
+
+def get_solicitud(usuario_id: int):
     query = "SELECT * FROM solicitudes WHERE usuario_id = %s"
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (ced,))
-            return cursor.fetchone()
+            cursor.execute(query, (usuario_id,))
+            return cursor.fetchall()
 
 
 def save_solicitud(cc: Solicitudes, user):
     query = """
         INSERT INTO solicitudes (
-            usuario_id, tipo, estado, fecha_respuesta, respuesta, fecha_creacion
-        ) VALUES (%s, %s, %s, %s, %s, %s)
+            usuario_id, tipo, pdf_1, jpg_1, observacion,
+            estado, fecha_creacion, fecha_respuesta, respuesta
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query, (
-                cc.usuario_id, cc.tipo, cc.estado, cc.fecha_respuesta,
-                cc.respuesta, datetime.now()
+                cc.usuario_id, cc.tipo, cc.pdf_1, cc.jpg_1, cc.observacion,
+                cc.estado, datetime.now(), cc.fecha_respuesta, cc.respuesta
             ))
             connection.commit()
 
@@ -42,7 +47,7 @@ def save_solicitud(cc: Solicitudes, user):
                     content={"mensaje": "No se pudo registrar la solicitud", "status_code": 500}
                 )
             else:
-                x = log(email=user["email"], accion=f"Registra Solicitud {cc.usuario_id}")
+                x = log(email=user["email"], accion=f"Registra Solicitud de usuario_id={cc.usuario_id}")
                 save_log(x)
                 return JSONResponse(
                     status_code=201,
@@ -50,17 +55,18 @@ def save_solicitud(cc: Solicitudes, user):
                 )
 
 
-def update_solicitud(cc: Solicitudes, user):
+def update_solicitud(id: int, cc: Solicitudes, user):
     query = """
         UPDATE solicitudes SET 
-            tipo = %s, estado = %s, fecha_respuesta = %s, respuesta = %s
-        WHERE usuario_id = %s
+            tipo = %s, pdf_1 = %s, jpg_1 = %s, observacion = %s,
+            estado = %s, fecha_respuesta = %s, respuesta = %s
+        WHERE id = %s
     """
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query, (
-                cc.tipo, cc.estado, cc.fecha_respuesta,
-                cc.respuesta, cc.usuario_id
+                cc.tipo, cc.pdf_1, cc.jpg_1, cc.observacion,
+                cc.estado, cc.fecha_respuesta, cc.respuesta, id
             ))
             connection.commit()
 
@@ -70,7 +76,7 @@ def update_solicitud(cc: Solicitudes, user):
                     content={"mensaje": "No se pudo actualizar la solicitud", "status_code": 500}
                 )
             else:
-                x = log(email=user["email"], accion=f"Actualiza Solicitud {cc.usuario_id}")
+                x = log(email=user["email"], accion=f"Actualiza Solicitud ID={id}")
                 save_log(x)
                 return JSONResponse(
                     status_code=200,
@@ -78,11 +84,11 @@ def update_solicitud(cc: Solicitudes, user):
                 )
 
 
-def delete_solicitud(ced: str, user):
-    query = "DELETE FROM solicitudes WHERE usuario_id = %s"
+def delete_solicitud(id: int, user):
+    query = "DELETE FROM solicitudes WHERE id = %s"
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (ced,))
+            cursor.execute(query, (id,))
             connection.commit()
 
             if cursor.rowcount == 0:
@@ -91,7 +97,7 @@ def delete_solicitud(ced: str, user):
                     content={"mensaje": "No se pudo eliminar la solicitud", "status_code": 500}
                 )
             else:
-                x = log(email=user["email"], accion=f"Elimina Solicitud {ced}")
+                x = log(email=user["email"], accion=f"Elimina Solicitud ID={id}")
                 save_log(x)
                 return JSONResponse(
                     status_code=200,

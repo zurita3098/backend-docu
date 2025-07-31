@@ -8,11 +8,9 @@ router_com = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
-#------------------COMUNIONES-----------------
 @router_com.get('/get')
-def get_solicitudes(ced:str, user=Depends(get_current_user)):
-    result = (ced)
+def get_solicitudes(usuario_id:int, user=Depends(get_current_user)):
+    result = get_solicitud(usuario_id)
     return result
 
 @router_com.post('/post')
