@@ -11,7 +11,7 @@ class Users(BaseModel):
     email: str
     password: str
     fecha_creacion: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    fecha_actualizacion: Optional[datetime] = None
     cedula: Optional[str] = None
     nombre_apellido: Optional[str] = None
     activo: Optional[bool] = True
@@ -30,7 +30,10 @@ def login(email: str, password: str):
                 if result:
                     return result
                 else:
-                    raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+                    raise HTTPException(
+                        status_code=401,
+                        detail="Credenciales inválidas"
+                    )
     except HTTPException:
         raise
     except Exception as e:
@@ -62,7 +65,7 @@ def save_user(bb: Users, newPassword="", user=None):
         )
 
     query = """
-        INSERT INTO users (username, email, password, fecha_creacion, updated_at) 
+        INSERT INTO users (username, email, password, fecha_creacion, fecha_actualizacion) 
         VALUES (%s, %s, %s, %s, %s)
     """
     with get_db_connection() as connection:
@@ -96,7 +99,7 @@ def update_user(bb: Users, user):
             cedula = %s, 
             nombre_apellido = %s, 
             activo = %s, 
-            updated_at = %s
+            fecha_actualizacion = %s
         WHERE username = %s
     """
     with get_db_connection() as connection:

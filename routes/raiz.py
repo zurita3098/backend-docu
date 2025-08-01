@@ -33,7 +33,7 @@ def login_user(login_data: LoginRequest):
     if user:
         expires = timedelta(days=3)
         token = create_access_token(data={"sub": user["email"]}, expires_delta=expires)
-        return {"access_token": token, "token_type": "bearer"}
+        return {"usuario_id": user["id"],"access_token": token, "token_type": "bearer"}
 
 @router.post('/register')
 def save_userx(data: Users):
